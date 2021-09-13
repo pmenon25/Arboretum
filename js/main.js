@@ -1,7 +1,7 @@
 class Card {
-    constructor(value, trees) {
+    constructor(value, tree) {
         this.value = value;
-        this.trees = trees;
+        this.trees = tree;
 
     }
 }
@@ -65,4 +65,17 @@ function addToPlayerGrid(player) {
 let players = document.getElementsByClassName('player');
 for (let i = 0; i < players.length; ++i) {
     addToPlayerGrid(players[i]);
+}
+
+// addToHandDeck help to make player hand deck
+function addToHandDeck(hand){
+    for (let i = 1 ; i <=8 ; i++){
+        let element  = document.createElement('div');
+        element.setAttribute('id' , `hand${i}`);
+        hand.appendChild(element);
+    }
+}
+let hands = document.getElementsByClassName('hand');
+for (let i = 0 ; i <= hands.length ; i++){
+    addToHandDeck(hands[i]);
 }
