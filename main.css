@@ -24,6 +24,32 @@ p {
     grid-template-rows: repeat(32, 1fr);
     grid-template-columns: repeat(32, 1fr);
 }
+.hand{
+    display: grid;
+    grid-gap: 2px;
+    width: 100%;
+    height: 100%;
+    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    border: 2px solid black;
+}
+.card{
+    box-sizing: border-box;
+  display: inline-block;
+  margin: px;
+  background-color: #fff;
+  border-radius: 0.20em;
+  border: 1px solid #c3c3c3;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  font-size: 12px; 
+  background-image: none;
+  background-color: rgba(195, 195, 195, 0.5);
+  border: 0.15em dashed #daa520;
+  width: 50%;
+  height: 100%
+}
 
 #player1 {
     grid-column: 1/3;
