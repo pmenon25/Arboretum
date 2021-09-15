@@ -5,6 +5,12 @@ let savedCard = null;
 const game = {
     turn: 1,
 
+    // Each turn consists of 3 phases/steps
+    // Step 1: Draw 2 cards from play deck into your hand
+    // Step 2: Play one card from your hand into your arboretum
+    // Step 3: Discard a card from your hand into discard pile
+    phase : 1,
+
     playDeck: {
         cards: [],
         shuffle: function () {
@@ -34,11 +40,11 @@ const game = {
                 }
             }
         },
+    },
 
-        nextTurn: function() {
-        }
+    nextTurn: function () {
+        // this.turn = this.turn * -1;
     }
-
 }
 
 class Card {
@@ -47,16 +53,35 @@ class Card {
         this.trees = tree;
 
     }
-    render() {
 
+    /// <div class = "card">
+    ///     <p class = "value">9</p>
+    ///     <p class = "tree">A</p>
+    /// </div>
+    render() {
+        let cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+
+        let cardChildElement1 = document.createElement('p');
+        cardChildElement1.classList.add('value');
+        cardChildElement1.textContent = this.value;
+        cardElement.appendChild(cardChildElement1);
+        
+        let cardChildElement2 = document.createElement('p');
+        cardChildElement2.classList.add('tree');
+        cardChildElement2.textContent = this.trees;
+        cardElement.appendChild(cardChildElement2);
+        
+        return cardElement;
     }
 }
 
 
 class Player {
-    constructor(playerId) {
+    constructor(playerId, initialHand) {
         this.handOfPlayer = game.playDeck.draw(7);
         this.arboretum = [];
+        this.initialHand = initialHand;
 
         //This player DOM id will be selected
         this.playerElement = document.getElementById(playerId);
@@ -68,11 +93,11 @@ class Player {
         }
 
     }
+
     render() {
         this.renderPlayerHand();
         this.renderPlayerArboretum();
     }
-
 
     placeCardInToArboretum(card) {
         // playing for the first time and all the grids are cells are empty then place the first card in the middle of the grid
@@ -90,21 +115,25 @@ class Player {
         }
     }
 
-    // renderPlayerHand function will show the  hand deck 
+    // renderPlayerHand function will show the hand deck 
     renderPlayerHand() {
         // addToPlayerHand help to make player hand deck
-        function addToPlayerHand(hand) {
-            for (let i = 0; i < 8; i++) {
+        function addToPlayerHand(hand, initialHand) {
+            for (let i = 0; i < 9; i++) {
                 let element = document.createElement('div');
                 element.classList.add('slot');
+
+                if (i < initialHand.length) {
+                    element.appendChild(initialHand[i].render());
+                }
+
                 hand.appendChild(element);
             }
         }
         // Selected player will access the child node
         let handElement = this.playerElement.children[1];
 
-
-        addToPlayerHand(handElement);
+        addToPlayerHand(handElement, this.initialHand);
         handElement.addEventListener('click', cardPickHandler);
     }
 
@@ -129,17 +158,33 @@ class Player {
 }
 
 function cardPickHandler(evt) {
-    let select = evt.target.parentNode.parentNode;
-    let selectEl = select.getAttribute('id');
-    savedCard = evt.target;
-    console.log(savedCard)
+    let parent = evt.target.parentNode.parentNode;
+    let parentId = parent.getAttribute('id');
+
+    if (game.turn === 1 && parentId !== 'player1') {
+        return;
+    } else if (game.turn === -1 && parentId !== 'player2') {
+        return;
+    } else {
+        savedCard = evt.target;
+        console.log(savedCard)
+    }
 }
 
 function cardPutHandler(evt) {
-    if (savedCard === null) {
+    let parentArboretum = evt.target.parentNode.parentNode;
+    let parentArboretumId = parentArboretum.getAttribute('id');
+
+    if (game.turn === 1 && parentArboretumId !== "player1") {
+        return;
+    } else if (game.turn === -1 && parentArboretumId !== 'player2') {
+        return;
+    } else if (savedCard === null) {
         alert('No card selected!')
+    } else {
+        evt.target = savedCard;
+        console.log('put')
     }
-    console.log('put')
 }
 
 function undoCard(evt) {
@@ -149,15 +194,19 @@ function undoCard(evt) {
 function init() {
     game.playDeck.populate();
     game.playDeck.shuffle();
-    game.playDeck.draw(7);
 
-    let player1 = new Player('player1');
-    let player2 = new Player('player2');
+    document.getElementById('undo').addEventListener('click', undoCard);
+
+    let player1 = new Player('player1', game.playDeck.draw(7));
+    let player2 = new Player('player2', game.playDeck.draw(7));
 
     player1.render();
     player2.render();
 
-    document.getElementById('undo').addEventListener('click', undoCard);
+    game.nextTurn();
+}
+
+function step1() {
 
 }
 
