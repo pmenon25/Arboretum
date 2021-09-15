@@ -1,7 +1,9 @@
 const gridSize = 8;
 
 let savedCard = null;
-
+let savedSlot = null;
+let arboretumPhaseCompleted = false;
+let discardPhaseCompleted = false;
 
 const game = {
     turn: 1,
@@ -167,6 +169,7 @@ class Player {
         addToPlayerArboretum(arboretumElement);
         arboretumElement.addEventListener('click', cardPutHandler);
     }
+
 }
 
 // Player
@@ -181,8 +184,28 @@ class Player {
 //   - Arboretum
 
 function cardPickHandler(evt) {
+    if (arboretumPhaseCompleted && discardPhaseCompleted) {
+        return;
+    }
+
     let parentPlayer = evt.target.parentNode.parentNode.parentNode.parentNode;
     let playerId = parentPlayer.getAttribute('id');
+
+    // SavedCard   SavedSlot
+    //   null          null         - No card picked; no undo available
+    //   null          !null        - No card picked; but undo available
+    //   !null          null        - Card picked; but no undo available
+    //   !null          !null       - Card picked and undo available (b)
+
+
+    // If we have already picked a card; don't allow picking another one
+    if (savedCard !== null) {
+        return;
+    }
+
+    // But if we don't have a card or we have placed it already then allow picking more
+    // cards. However, disable "undo" saving.
+    savedSlot = null;
 
     if (game.turn === 1 && playerId !== 'player1') {
         return;
@@ -200,11 +223,16 @@ function cardPickHandler(evt) {
             }
         }
 
+        savedSlot = parentSlot;
         savedCard.remove();
     }
 }
 
 function cardPutHandler(evt) {
+    if (arboretumPhaseCompleted === true) {
+        return;
+    }
+    
     let parentArboretum = evt.target.parentNode.parentNode;
     let parentArboretumId = parentArboretum.getAttribute('id');
 
@@ -216,17 +244,25 @@ function cardPutHandler(evt) {
         alert('No card selected!')
     } else {
         evt.target.appendChild(savedCard);
+
+        savedCard = null;
+        savedSlot = null;
+        arboretumPhaseCompleted = true;
     }
 }
 
 function undoCard(evt) {
-    savedCard = null;
+    if (savedSlot !== null && savedCard !== null) {
+        savedSlot.appendChild(savedCard);
+        savedCard = null;
+        savedSlot = null;
+    }
 }
 
 function init() {
     let currentPlayer;
     savedCard = null;
-    
+
     game.playDeck.populate();
     game.playDeck.shuffle();
 
