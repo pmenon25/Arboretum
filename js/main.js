@@ -2,6 +2,7 @@ const gridSize = 8;
 
 let savedCard = null;
 
+
 const game = {
     turn: 1,
 
@@ -9,7 +10,7 @@ const game = {
     // Step 1: Draw 2 cards from play deck into your hand
     // Step 2: Play one card from your hand into your arboretum
     // Step 3: Discard a card from your hand into discard pile
-    phase : 1,
+    phase: 1,
 
     playDeck: {
         cards: [],
@@ -43,7 +44,17 @@ const game = {
     },
 
     nextTurn: function () {
-        // this.turn = this.turn * -1;
+        this.turn = this.turn * -1;
+        
+        savedCard = null;
+        
+        if (game.turn === 1) {
+            currentPlayer = player1;
+        } else {
+            currentPlayer = player2;
+        }
+
+        currentPlayer.addCardsToPlayerHand(game.playDeck.draw(2));
     }
 }
 
@@ -66,32 +77,34 @@ class Card {
         cardChildElement1.classList.add('value');
         cardChildElement1.textContent = this.value;
         cardElement.appendChild(cardChildElement1);
-        
+
         let cardChildElement2 = document.createElement('p');
         cardChildElement2.classList.add('tree');
         cardChildElement2.textContent = this.trees;
         cardElement.appendChild(cardChildElement2);
-        
+
         return cardElement;
     }
 }
 
-
 class Player {
-    constructor(playerId, initialHand) {
-        this.handOfPlayer = game.playDeck.draw(7);
-        this.arboretum = [];
-        this.initialHand = initialHand;
+    constructor(playerId) {
+        let initialHand = game.playDeck.draw(7);
 
-        //This player DOM id will be selected
-        this.playerElement = document.getElementById(playerId);
-    }
+        this.handOfPlayer = [null, null, null, null, null, null, null, null, null];
 
-    makeArboretum() {
-        for (let row = 0; row < gridSize; row++) {
-            this.arboretum.push(new Array(gridSize));
+        for (let i = 0; i < initialHand.length; i++) {
+            this.handOfPlayer[i] = initialHand[i];
         }
 
+        this.arboretumArray = [];
+
+        for (let row = 0; row < gridSize; row++) {
+            this.arboretumArray.push(new Array(gridSize));
+        }
+
+        // This player DOM id will be selected
+        this.playerElement = document.getElementById(playerId);
     }
 
     render() {
@@ -99,75 +112,95 @@ class Player {
         this.renderPlayerArboretum();
     }
 
-    placeCardInToArboretum(card) {
-        // playing for the first time and all the grids are cells are empty then place the first card in the middle of the grid
-        let isGridEmpty = true;
-        for (let row = 0; row < this.arboretum.length; row++) {
-            for (let col = 0; col < this.arboretum[row].length; col++) {
-                if (this.arboretum[row][col] !== null) {
-                    isGridEmpty = false;
-                }
-            }
-        }
+    addCardsToPlayerHand(drawnCards) {
+        let handElement = this.playerElement.children[1];
+        for (let i = 0; i < handElement.children.length; i++) {
+            // If slot in array is empty
+            if (this.handOfPlayer[i] === null) {
+                let emptySlotElement = handElement.children[i];
+                let card = drawnCards.pop();
 
-        if (isGridEmpty) {
-            this.arboretum[gridSize / 2][gridSize / 2] = card;
+                this.handOfPlayer[i] = card;
+                emptySlotElement.appendChild(card.render());
+            }
         }
     }
 
     // renderPlayerHand function will show the hand deck 
     renderPlayerHand() {
         // addToPlayerHand help to make player hand deck
-        function addToPlayerHand(hand, initialHand) {
-            for (let i = 0; i < 9; i++) {
+        function makeInitialPlayerHand(hand, handArray) {
+            for (let i = 0; i < handArray.length; i++) {
                 let element = document.createElement('div');
                 element.classList.add('slot');
 
-                if (i < initialHand.length) {
-                    element.appendChild(initialHand[i].render());
+                if (handArray[i] !== null) {
+                    let card = handArray[i];
+                    element.appendChild(card.render());
                 }
 
                 hand.appendChild(element);
             }
         }
+
         // Selected player will access the child node
         let handElement = this.playerElement.children[1];
 
-        addToPlayerHand(handElement, this.initialHand);
+        makeInitialPlayerHand(handElement, this.handOfPlayer);
         handElement.addEventListener('click', cardPickHandler);
     }
 
     // renderPlayerArboretum function will show the  hplayer's arboretum table
     renderPlayerArboretum() {
         // addToPlayerArboretum help to make player arboretum
-        function addToPlayerArboretum(player) {
+        function addToPlayerArboretum(playerElement) {
             for (let i = 0; i < gridSize * gridSize; i++) {
                 let element = document.createElement('div');
                 element.classList.add('slot');
                 element.setAttribute('id', `cell${i + 1}`);
-                player.appendChild(element);
+                playerElement.appendChild(element);
             }
         }
         // Selected player will access the child node
         let arboretumElement = this.playerElement.children[0];
-
 
         addToPlayerArboretum(arboretumElement);
         arboretumElement.addEventListener('click', cardPutHandler);
     }
 }
 
-function cardPickHandler(evt) {
-    let parent = evt.target.parentNode.parentNode;
-    let parentId = parent.getAttribute('id');
+// Player
+//   - Hand
+//     - Slot
+//       - Card
+//         - Value    <-
+//         - Trees    <- 
+//     - Slot
+//     - Slot
+//        ...
+//   - Arboretum
 
-    if (game.turn === 1 && parentId !== 'player1') {
+function cardPickHandler(evt) {
+    let parentPlayer = evt.target.parentNode.parentNode.parentNode.parentNode;
+    let playerId = parentPlayer.getAttribute('id');
+
+    if (game.turn === 1 && playerId !== 'player1') {
         return;
-    } else if (game.turn === -1 && parentId !== 'player2') {
+    } else if (game.turn === -1 && playerId !== 'player2') {
         return;
     } else {
-        savedCard = evt.target;
-        console.log(savedCard)
+        savedCard = evt.target.parentNode;
+
+        let parentSlot = savedCard.parentNode;
+        let parentHand = parentSlot.parentNode;
+
+        for (let i = 0; i < parentHand.children.length; i++) {
+            if (parentHand.children[i] === parentSlot) {
+                // Update current player's handOfPlayer
+            }
+        }
+
+        savedCard.remove();
     }
 }
 
@@ -182,8 +215,7 @@ function cardPutHandler(evt) {
     } else if (savedCard === null) {
         alert('No card selected!')
     } else {
-        evt.target = savedCard;
-        console.log('put')
+        evt.target.appendChild(savedCard);
     }
 }
 
@@ -192,22 +224,20 @@ function undoCard(evt) {
 }
 
 function init() {
+    let currentPlayer;
+    savedCard = null;
+    
     game.playDeck.populate();
     game.playDeck.shuffle();
 
     document.getElementById('undo').addEventListener('click', undoCard);
 
-    let player1 = new Player('player1', game.playDeck.draw(7));
-    let player2 = new Player('player2', game.playDeck.draw(7));
+    let player1 = new Player('player1');
+    let player2 = new Player('player2');
 
     player1.render();
     player2.render();
-
-    game.nextTurn();
 }
 
-function step1() {
-
-}
 
 init();
