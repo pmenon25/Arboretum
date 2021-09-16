@@ -140,13 +140,13 @@ h1 {
 }
 
 #reset {
-    position: fixed;
+    position: absolute;
     right: 48%;
     margin-top: 5%;
 }
 
 #undo {
-    position: fixed;
+    position: absolute;
     left: 42%;
     margin-top: 5%;
 }
