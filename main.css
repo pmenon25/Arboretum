@@ -1,5 +1,5 @@
 body {
-    background-image: url(images/tabletop.jpg);
+    background-image: url('images/tabletop.jpg');
     background-repeat: no-repeat;
     background-size: cover;
 }
@@ -82,7 +82,7 @@ h1 {
 }
 
 #playDeck {
-    background-image: url(/images/card-deck.png);
+    background-image: url('images/card-deck.png');
     grid-column: 5/6;
     grid-row: 2/3;
     text-align: center;
@@ -106,7 +106,7 @@ h1 {
 }
 
 .card {
-    background-image: url(/images/Jacuranda.png);
+    background-image: url('images/Jacuranda.png');
     box-sizing: border-box;
     display: inline-block;
     box-shadow: 2px 2px #000;
