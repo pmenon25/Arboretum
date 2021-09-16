@@ -1,15 +1,11 @@
 const gridSize = 8;
 
-// SavedCard   SavedSlot
-//   null          null         - No card picked; no undo available
-//   null          !null        - No card picked; but undo available
-//   !null          null        - Card picked; but no undo available
-//   !null          !null       - Card picked and undo available (b)
-
+//savedCardObject will track the card picked from the hand(DOM) and the object
 let savedCardObject = null;
 
 let arboretumPhaseCompleted = false;
 let discardPhaseCompleted = false;
+
 
 class Card {
     constructor(value, tree) {
@@ -74,6 +70,14 @@ class PlayDeck {
             }
         }
     }
+
+    isPlaydeckEmpty() {
+        if (this.cards.length === 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 class Player {
@@ -99,6 +103,8 @@ class Player {
 
         // Selected player will access the child node
         this.arboretumElement = this.playerElement.children[0];
+
+
     }
 
     render() {
@@ -106,16 +112,13 @@ class Player {
         this.renderPlayerArboretum();
     }
 
+
     addCardsToPlayerHand(drawnCards) {
-        let handElement = this.playerElement.children[1];
-        for (let i = 0; i < handElement.children.length; i++) {
+        for (let i = 0; i < this.handOfPlayer.length; i++) {
             // If slot in array is empty
             if (this.handOfPlayer[i] === null) {
-                let emptySlotElement = handElement.children[i];
-                let card = drawnCards.pop();
-
-                this.handOfPlayer[i] = card;
-                emptySlotElement.appendChild(card.render());
+                this.handOfPlayer[i] = drawnCards.pop();
+                this.handElement.children[i].appendChild(this.handOfPlayer[i].render());
             }
         }
     }
@@ -136,6 +139,7 @@ class Player {
                 hand.appendChild(element);
             }
         }
+
 
         makeInitialPlayerHand(this.handElement, this.handOfPlayer);
         this.handElement.addEventListener('click', cardPickHandler);
@@ -164,19 +168,34 @@ class Game {
         this.playDeck = new PlayDeck();
         this.player1 = new Player('player1', this.playDeck.draw(7));
         this.player2 = new Player('player2', this.playDeck.draw(7));
-        this.currentPlayer = this.player1;
-        
+        this.currentPlayer = null;
+        this.currentPlayerName;
+
+        this.message = document.querySelector('.state');
+
     }
 
     nextTurn() {
-        this.turn = this.turn * -1;
-        if (this.currentPlayer === this.player1) {
-            this.currentPlayer = this.player2;
-        } else {
-            this.currentPlayer = this.player1;
+        if (this.playDeck.isPlaydeckEmpty()) {
+            this.message = "Game Over!"
         }
 
-        // currentPlayer.addCardsToPlayerHand(game.playDeck.draw(2));
+        if (this.currentPlayer === this.player1) {
+            this.currentPlayer = this.player2;
+            this.currentPlayerName = "Player 2";
+        } else {
+            this.currentPlayer = this.player1;
+            this.currentPlayerName = "Player 1";
+        }
+
+        arboretumPhaseCompleted = false;
+        discardPhaseCompleted = false;
+        savedCardObject = null;
+
+        this.currentPlayer.addCardsToPlayerHand(this.playDeck.draw(2));
+
+        // Pick card to play into arboretum
+        this.message.innerHTML = `${this.currentPlayerName}: Pick card to play into arboretum`;
     }
 
     render() {
@@ -308,6 +327,10 @@ function cardPutHandler(evt) {
             clickedElement.appendChild(savedCardObject.render());
             savedCardObject = null;
             arboretumPhaseCompleted = true;
+
+            // Pick card from hand to discard
+            game.message.innerHTML = `${game.currentPlayerName}: Pick card to place in discard pile`;
+
         }
 
         console.log(game.currentPlayer.arboretumArray);
@@ -335,9 +358,11 @@ function undoCard(evt) {
     }
 }
 
-document.getElementById('discardDeck').addEventListener('click' , function(evt){
+document.getElementById('discardDeck').addEventListener('click', function (evt) {
     savedCardObject = null;
-   
+    discardPhaseCompleted = true;
+    game.nextTurn();
+
 })
 
 const game = new Game();
@@ -345,9 +370,8 @@ const game = new Game();
 function init() {
     document.getElementById('undo').addEventListener('click', undoCard);
     game.render();
-    // game.nextTurn();
+    game.nextTurn();
 }
-
 
 
 init();
