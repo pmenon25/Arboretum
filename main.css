@@ -1,5 +1,5 @@
 body {
-    background-image: url('images/tabletop.jpg');
+    background-image: url('images/tabletop-min.jpg');
     background-repeat: no-repeat;
     background-size: cover;
 }
@@ -86,7 +86,7 @@ h1 {
     grid-column: 5/6;
     grid-row: 2/3;
     text-align: center;
-    background-size: cover;
+    background-size: cover; 
     width: 180px;
     height: 250px;
     box-shadow: 5px 5px rgb(83, 82, 82);
@@ -106,7 +106,7 @@ h1 {
 }
 
 .card {
-    background-image: url('images/Jacuranda.png');
+    background-image: url('images/Jacuranda-min.png');
     box-sizing: border-box;
     display: inline-block;
     box-shadow: 2px 2px #000;
