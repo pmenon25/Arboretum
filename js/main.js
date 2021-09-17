@@ -238,8 +238,7 @@ class Game {
     checkRightToScore(tree) {
         // Check the sum of cards in each players hands of that tree type
         // 0 - both have right
-        // 1 - player 1 has right
-        // 2 - player 2 has right
+        // 1 - player has right
 
         let player1Sum = 0;
         let player2Sum = 0;
@@ -338,6 +337,7 @@ function cardPickHandler(evt) {
     }
 }
 
+// Selects the path from user and highlights to yellow
 function pathSelectionHandler(evt) {
     let clickedCardElement = evt.target.parentNode;
     let playerElement = clickedCardElement.parentNode.parentNode.parentNode;
@@ -367,6 +367,7 @@ function pathSelectionHandler(evt) {
     game.currentPlayer.pathElements.push(clickedCardElement);
 }
 
+//Confirms whether the path selected is valid and calculates score.
 function pathConfirmationHandler(evt) {
     if (!game.currentPlayer.paths) {
         return;
@@ -408,7 +409,7 @@ function endScoringHandler(evt) {
         let winner = "Tie";
         if (game.player1.score > game.player2.score) {
             winner = "Player 1";
-        } else  if (game.player2.score > game.player1.score) {
+        } else if (game.player2.score > game.player1.score) {
             winner = "Player 2";
         }
 
