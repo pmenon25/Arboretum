@@ -408,7 +408,7 @@ function endScoringHandler(evt) {
         let winner = "Tie";
         if (game.player1.score > game.player2.score) {
             winner = "Player 1";
-        } else {
+        } else  if (game.player2.score > game.player1.score) {
             winner = "Player 2";
         }
 
